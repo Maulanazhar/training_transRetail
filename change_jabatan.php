@@ -5,7 +5,7 @@ include "connect.php"; ?>
       <!-- Bootstrap CSS -->
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>      
-    <title> Master Rule of Title </title>
+    <title> Edit Rule of Title </title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -45,25 +45,27 @@ include "connect.php"; ?>
     
       <div class="col-md-6 col-md-offset-3">
         <div class="well well-sm">
-          <form class="form-horizontal" method="POST" action="tambah_jabatan.php" enctype="multipart/form-data">
+          <form class="form-horizontal" method="POST" action="change_jabatan_proses.php" enctype="multipart/form-data">
           <fieldset>
             <legend class="text-center">Master Rule of Title </legend>
-            
+
+              <?php
+            $ambil = $_GET['kirim_id']; 
+            $jabatan= "SELECT MTC_CODE, MRT_MTC_CODE, MTC_NAME, MRT_ORDER, MRT_MJ_CODE, MJ_NAME, MRT_ID FROM MST_TRAINING_CODE
+                       LEFT JOIN (SELECT MRT_MJ_CODE, MJ_NAME ,MRT_MTC_CODE, MRT_ORDER, MRT_ID FROM mst_rule_title, mst_jabatan
+                       WHERE MRT_MJ_CODE= MJ_CODE AND MRT_MJ_CODE='$ambil') X ON MRT_MTC_CODE=MTC_CODE 
+                       WHERE MTC_STATUS='A'
+                       ORDER BY MTC_CODE";
+
+            $isijabatan= mysqli_query($connect, $jabatan);
+            $data_jabatan=mysqli_fetch_assoc($isijabatan);
+             ?>
+
             <div class="form-group">
               <label class="col-md-3 control-label" for="name">Title Name</label>
                 <div class="col-md-9">
-                  <select name="jabatan" required>
-                  <option value=''>Pilih Jabatan</option>
-                <?php 
-                    $tambah_jabatan = "SELECT * FROM mst_jabatan";
-                    $sql_tambah_jabatan= mysqli_query($connect, $tambah_jabatan);
-                    while ($data_sql=mysqli_fetch_assoc($sql_tambah_jabatan)) {
-
-                    echo "<option value='".$data_sql['MJ_CODE']."'>".$data_sql['MJ_NAME']."</option>";
-                   }
-
-                    ?> 
-                  </select>         
+                  <input type="text" readonly value="<?php echo $data_jabatan["MJ_NAME"]?>">
+                  <input type=hidden name="jabatan" value="<?php echo $data_jabatan["MRT_MJ_CODE"]?>">         
               </div>
             </div>
 
@@ -72,31 +74,28 @@ include "connect.php"; ?>
             <div class="col-md-9">                                                      
               <div class="table-responsive">
                 <table id = "t01">
-                  
-
                   <!-- Untuk Menampilkan data dari tabel training code -->
                   <?php 
-                  $code= "SELECT MTC_CODE, MTC_NAME, MTC_STATUS FROM mst_training_code WHERE MTC_STATUS='A' ORDER BY MTC_CODE";
-                  $isicode= mysqli_query($connect, $code);
-
                   //nilai awal variabel untuk input
                   $i=1;
 
                   //untuk membaca dan mengambil data dalam bentuk array
-                  while ($data_code=mysqli_fetch_assoc($isicode)) {
+                  while ($data_jabatan) {
                     
                       echo"<tr>";
-                        echo "<td> <input type=\"number\" id=\"".$data_code['MTC_CODE']."\" disabled name=\"order[]\" style=\"width: 4em\" min='1' required> <input type=\"checkbox\" id=\"".$data_code['MTC_NAME']."\" name=\"training[]\" required value=\"".$data_code['MTC_CODE']."\"> ".$data_code['MTC_NAME']."</td>";
+                        echo "<td> <input type=\"number\" id=\"O_".$data_jabatan['MTC_CODE']."\" name=\"order[]\" style=\"width: 4em\" min='1' value=\"".$data_jabatan['MRT_ORDER']."\"".($data_jabatan['MRT_MTC_CODE']?" ":"disabled").">";
+                        echo "<input type=\"checkbox\" id=\"C_".$data_jabatan['MTC_CODE']."\" name=\"training[]\" value=\"".$data_jabatan['MTC_CODE']."\"".($data_jabatan['MRT_MTC_CODE']?" checked":"")."> [".$data_jabatan['MTC_CODE']."] ".$data_jabatan['MTC_NAME']."</td>";
                       echo "</tr>";
                     ?>
 
                       <script>
-                        document.getElementById("<?php echo $data_code['MTC_NAME']; ?>").onchange = function() {
-                        document.getElementById("<?php echo $data_code['MTC_CODE']; ?>").disabled = !this.checked;
-                    };
+                        document.getElementById("<?php echo "C_".$data_jabatan['MTC_CODE']; ?>").onchange = function() {
+                        document.getElementById("<?php echo "O_".$data_jabatan['MTC_CODE']; ?>").disabled = !this.checked;
+                        };
                       </script>
 
                     <?php 
+                    $data_jabatan=mysqli_fetch_assoc($isijabatan);
                     $i++;
                   }
                   ?>
@@ -110,7 +109,7 @@ include "connect.php"; ?>
         <!-- Button Submit -->
             <div class="form-group">
               <div class="col-md-8 text-right">
-                <button type="submit" class="btn btn-primary btn-lg" name="tambah_code">Submit</button>
+                <button type="submit" class="btn btn-primary btn-lg"> Submit </button>
               </div>
             </div>
 

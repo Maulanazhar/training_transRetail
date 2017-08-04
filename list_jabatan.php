@@ -1,10 +1,9 @@
-<?php  
+  <?php  
 include "connect.php"; ?> 
 
 <html>
   <head>
-    <title> Training Code  </title>
-
+    <title> List Jabatan </title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -25,60 +24,63 @@ include "connect.php"; ?>
       <!-- CSS and JS -->
       <link rel="stylesheet" type="text/css" href="css/table.css" media="screen" />
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  </head>
 
 <?php include "navbar.php"; ?>
 
-<!-- Form Tambah Training Code -->
 <body>
-<br> <br>
-<br> <br>
-<br> <br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 
-            <form action="training_code2.php">
+            <!-- Form Tambah Jabatan -->
+            <form action="jabatan.php">
               <div class="col-md-7 text-right">
-                <button type="submit" class="btn btn-primary btn-lg" name="tambah_training">Add Training Code</button>
+                <button type="submit" class="btn btn-primary btn-lg" name="tambah_training">Add Rule Title</button>
               </div>
             </form>
+
 <br>
 <br>
-
-
-  <!-- Tabel Training Code -->
+  <!-- Tabel Jabatan -->
   <table class="table-fill">
-    <thead>
       <tr>
-        <th><center>No</center></th>
-        <th><center>Training Code</center></th>
-        <th><center>Training Name</center></th>
-        <th><center>Hours</center></th>
-        <th><center>Action</center></th>
+        <th>No</th>
+        <th>Title Name</th>
+        <th>Count of Training</th>
+        <th>Action</th>
       </tr>
     </thead>
-
 
   <tbody class="table-hover">
     <?php
 
-    $train_code= "SELECT * FROM mst_training_code WHERE MTC_STATUS='A'";
-    $isitrain_code= mysqli_query($connect, $train_code);
+    $jabatan= "SELECT MRT_MJ_CODE, MJ_NAME, COUNT(MRT_MJ_CODE) MRT_COUNT
+               FROM mst_jabatan, mst_rule_title
+               WHERE MRT_MJ_CODE=MJ_CODE
+               GROUP BY MRT_MJ_CODE";
+
+    $isijabatan= mysqli_query($connect, $jabatan);
 
     //nilai awal variabel untuk input
     $i=1;
     
     //untuk membaca dan mengambil data dalam bentuk array
-    while ($data_train_code=mysqli_fetch_assoc($isitrain_code)) {
+    while ($data_jabatan=mysqli_fetch_assoc($isijabatan)) {
                     
     echo"<tr>";
     echo "<td><center>".$i."</center></td>";
-    echo "<td><center>".$data_train_code['MTC_CODE']."</center></td>";
-    echo "<td><center>".$data_train_code['MTC_NAME']."</center></td>";
-    echo "<td><center>".$data_train_code['MTC_HOURS']."</center></td>";
+    echo "<td><center>".$data_jabatan['MJ_NAME']."</center></td>";
+    echo "<td><center>".$data_jabatan['MRT_COUNT']."</center></td>";
     echo "<td><center>" ?>
 
         <!-- Edit Form -->
-        <i class="material-icons button edit"><a href="change_trainCode.php?kirim_id=<?php echo $data_train_code['MTC_CODE'];?>" name="edit"> edit</a></i>
+        <input type="hidden" name="edit_id" value='<?php echo $data_jabatan['MRT_MJ_CODE'];?>'> <i class="material-icons button edit"> <a href="change_jabatan.php?kirim_id=<?php echo $data_jabatan['MRT_MJ_CODE'];?>" name="edit">edit</a></i>
 
-        <input type="hidden" name="remove_id" value="<?php echo $data_train_code['MTC_CODE'];?>"> <i class="material-icons button delete" value="<?php echo $data_train_code['MTC_CODE'];?>" > <a href="delete_trainCode.php?kirim_id=<?php echo $data_train_code['MTC_CODE'];?>" name="delete">delete</a></i>
+        <input type="hidden" name="remove_id" value='<?php echo $data_jabatan['MRT_MJ_CODE'];?>'> <i class="material-icons button delete"> <a href="delete_jabatan.php?kirim_id=<?php echo $data_jabatan['MRT_MJ_CODE'];?>" name="delete">delete</a></i>
 
     <?php
     "</center></td>";
@@ -88,19 +90,6 @@ include "connect.php"; ?>
     <?php 
       $i++;
     } ?>
-
-    </tbody>
-  </form>
+    </form>
+  </tbody>
 </table>
-</form>
-
-<br>
-<br>
-<br>
-
-</body>
-
-
-</head>
-</html>
-

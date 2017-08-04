@@ -1,10 +1,17 @@
 <?php 
-include 'connect.php';  
+include 'connect.php'; 
+
+
+      $ambil = $_GET['kirim_id']; 
+      $train_detail= "SELECT TH_ID, DATE_FORMAT(TH_DATE, '%Y-%m-%dT%H:%i') AS CUSTOM_DATE,  MTC_NAME, TH_EMP_TRAINER, TH_EXT_PARTICIPANTS, nama_karyawan, MTC_CODE
+                    	FROM training_hdr, training_dtl, mst_training_code, karyawan
+                    	WHERE TH_ID=TD_TH_ID AND TH_TRAIN_CODE=MTC_CODE AND TD_EMPLOYEE_ID=nik AND TH_ID='$ambil' AND TD_STATUS='A'";
+
+            $isitrain_detail= mysqli_query($connect, $train_detail);
+            $data_train_detail=mysqli_fetch_assoc($isitrain_detail); 
 ?>
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-  <head>
-    <meta charset="utf-8">
+<meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -34,43 +41,11 @@ include 'connect.php';
 
 
 <?php include 'navbar.php';
-
-  //mendefinisikan variabel
-  $train_dateErr = $train_codeErr = "";
-  $train_date = $train_code = "";
-
-  if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
-    //train date error message
-    if (empty($_POST["train_date"])) {
-      $train_dateErr = "Training Date is Required";
-    }
-    else {
-      $train_date = test_input($_POST["train_date"]);
-    }
-
-    //train code error message
-    if(empty($_POST["train_code"])) {
-      $train_codeErr = "Training Code is Required";
-    }
-    else {
-      $train_code = test_input($_POST["train_code"]);
-    }
-
-  function test_input($data) {
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
-    return $data;
-  }
-
-  }
-
   ?>
 
 
 <!-- Body -->
-<body>
+<body id ="test">
 <br>
 <br>
 <br>
@@ -83,30 +58,28 @@ include 'connect.php';
 
 <div class="container">
   <div class="row">
-
     
       <div class="col-md-12">
         <div class="well well-sm">
-          <form class="well form-horizontal" method="POST" action="tambah_formProses.php" enctype="multipart/form-data">
+          <form class="form-horizontal" method="POST" action="change_trainingDetail_proses.php" enctype="multipart/form-data">
           <fieldset>
             <legend class="text-center">Form Training</legend>
-               <p> <span class="error">* Required field. </span></p>
-                <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>"> </form>
+                <form method="post"> </form>
 
             <!-- Training date input-->
-            <div class="form-group">
+          <div class="form-group">
               <label for="dtp_input1" class="col-sm-2 control-label">Training Date</label>
               <div class="col-md-9">
                 <div class="input-group date form_datetime col-md-5" data-link-field="dtp_input1">
-                    <input class="form-control" size="16" type="text" name="train_date" value="" readonly>
+                    <input class="form-control" size="16" type="text" name="train_date" value="<?php echo $data_train_detail['CUSTOM_DATE']?>" readonly>
                     <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
                     <span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
                 </div>
                     <input type="hidden" id="dtp_input1" value="" />                  
-                <span class="error">* <?php echo $train_dateErr;?> </span>
               </div>
             </div>
-                    <!--Script Untuk datetime -->
+
+             <!--Script Untuk datetime -->
                       <script type="text/javascript">
               $('.form_datetime').datetimepicker({
                   //language:  'id',
@@ -141,24 +114,12 @@ include 'connect.php';
               });
           </script>
 
-
             <!-- Training Code Autocomplete input-->
             <div class="form-group">
               <label class="col-sm-2 control-label" for="train_code">Training Code</label>
               <div class="col-md-9">
-                  <select name="train_code">
-                  <option value=''>Pilih Training Code</option>
-                <?php 
-                    $train_code = "SELECT * FROM mst_training_code where MTC_STATUS='A'";
-                    $sql_train_code= mysqli_query($connect, $train_code);
-                    while ($data_sql=mysqli_fetch_assoc($sql_train_code)) {
-
-                    echo "<option value='".$data_sql['MTC_CODE']."'>".$data_sql['MTC_NAME']."</option>";
-                   }
-
-                    ?> 
-                  </select> 
-                <span class="error">* <?php echo $train_codeErr; ?> </span>
+                <input type="text" readonly value="<?php echo $data_train_detail["MTC_NAME"]?>">
+                <input type=hidden name="update_code" value="<?php echo $data_train_detail["MTC_CODE"]?>"> 
               </div>
             </div>
     
@@ -167,28 +128,34 @@ include 'connect.php';
         <div class="form-group" id="text">
           <label class="col-sm-2 control-label">Trainer</label>
             <div class="col-md-9">
-              <input id="trainer" name="trainer" type="text" placeholder="Trainer" class="auto" required>
+              <input id="trainer" name="update_trainer" type="text" class="auto" value="<?php echo $data_train_detail['TH_EMP_TRAINER']?>">
           </div>
         </div>
 
         <div class="form-group">
               <label class="col-sm-2 control-label">External Participant</label>
               <div class="col-md-9">
-                <input id="external_part" name="external_part" type="number" min="1" style="width:7em" class="form-control" required>
+                <input id="external_part" name="update_external" type="number" min="1" style="width:7em" class="form-control" value="<?php echo $data_train_detail['TH_EXT_PARTICIPANTS']?>">
               </div>
-        </div>
-
-                                                      
-                <div class="table-responsive">
-                  <table id="t01">
+            </div>
+                                                     
+              <div class="table-responsive">
+                <table id = "t01">
                   
 
                   <!-- Untuk Menampilkan data dari tabel karyawan -->
                   <?php 
-                  $tabel= "SELECT nik, nama_karyawan FROM karyawan ORDER BY nama_karyawan";
+                  $tabel= "SELECT * FROM karyawan 
+                           LEFT JOIN(SELECT TD_TH_ID, TD_EMPLOYEE_ID, TH_ID, TH_DATE, TH_TRAIN_CODE, TH_EMP_TRAINER, TH_EXT_PARTICIPANTS FROM training_dtl, training_hdr
+                           WHERE TH_ID=TD_TH_ID AND TD_TH_ID='$ambil') X ON TD_EMPLOYEE_ID=nik
+                           WHERE toko='Carrefour Lebak Bulus'
+                           ORDER BY nama_karyawan";
+
                   $isitabel= mysqli_query($connect, $tabel);
 
                   //nilai awal variabel untuk input
+                  $i=1;
+
                   $total_kolom=4;
                   $kol=1;
 
@@ -197,10 +164,10 @@ include 'connect.php';
                   while ($data_tabel=mysqli_fetch_assoc($isitabel)) {
                     if($kol==1)                   
                       echo"<tr>";
-                        
-                        echo "<td><span style=\"font-size:8pt\"><input type=\"checkbox\" name=\"peserta[]\" value=\"".$data_tabel['nik']."\">[".$data_tabel['nik']."] ".$data_tabel['nama_karyawan']."</span></td>";
-                        
-                    if($kol%$total_kolom==0){
+                  
+                        echo "<td><span style=\"font-size:10px\"><input type=\"checkbox\" name=\"update_peserta[]\" value=\"".$data_tabel['nik']."\" ".($data_tabel['TD_EMPLOYEE_ID']?" checked":"").">[".$data_tabel['nik']."] ".$data_tabel['nama_karyawan']."</span></td>";
+
+                      if($kol%$total_kolom==0){
                       echo "</tr>"; 
                       $kol=0;
                     }
@@ -212,11 +179,14 @@ include 'connect.php';
                   }
                   ?>
                 </table>
-
+      
+    
             <!-- Form actions -->
             <div class="form-group">
-              <div class="col-md-10 text-right">
-                <button type="submit" class="btn btn-primary btn-lg" name="add">Submit</button>
+              <div class="col-md-12 text-right">
+
+                <input type="hidden" name="update_td" value="<?php echo $data_train_detail['TH_ID'];?>"> <button type="submit" class="btn btn-primary btn-lg" name="add">Submit</button>
+
               </div>
             </div>
 
@@ -226,7 +196,6 @@ include 'connect.php';
     </div>
   </div>
 </div>
-
 
 </body>
 </html>
